@@ -23,9 +23,10 @@ public class AlarmReceiver extends BroadcastReceiver {
             Log.d(TAG, "onReceive extras=" + intent.getExtras());
             String title = intent.getStringExtra("title");
             if (title == null) title = "No title";
+            String message = intent.getStringExtra("message");
+            if (message == null) message = "Deadline reminder";
 
-            int taskId = intent.getIntExtra("task_id", 0);
-            int notifyId = intent.getIntExtra("notify_id", taskId);
+            int notifyId = intent.getIntExtra("notify_id", 0);
 
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (manager == null) {
@@ -70,8 +71,8 @@ public class AlarmReceiver extends BroadcastReceiver {
                 builder = new Notification.Builder(context);
             }
 
-            builder.setContentTitle("Deadline Reminder")
-                   .setContentText(title)
+            builder.setContentTitle(title)
+                   .setContentText(message)
                    .setSmallIcon(android.R.drawable.ic_dialog_info)
                    .setAutoCancel(true);
 

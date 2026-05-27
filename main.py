@@ -3,14 +3,19 @@ from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivymd.icon_definitions import md_icons
 from kivy.core.text import LabelBase
-from kivy.core.text import LabelBase
+from kivy.uix.widget import Widget
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.scrollview import MDScrollView
+from kivymd.uix.list import MDList
+from kivymd.uix.label import MDLabel
 from kivymd.font_definitions import fonts
 from kivymd.uix.list import MDListItem, MDListItemHeadlineText, MDListItemSupportingText
 from kivymd.uix.dialog import (MDDialog, MDDialogHeadlineText, MDDialogButtonContainer, MDDialogContentContainer, MDDialogSupportingText)
-from kivymd.uix.button import MDButton, MDButtonText, MDIconButton
+from kivymd.uix.button import MDButton, MDButtonText, MDIconButton, MDButtonIcon
 from kivymd.uix.textfield import MDTextField, MDTextFieldHintText, MDTextFieldTrailingIcon
 from kivymd.uix.pickers import MDModalDatePicker, MDTimePickerDialVertical
-from alarm import schedule_alarm
+from alarm import schedule_alarm, cancel_alarm
+from datetime import datetime, timedelta
 from kivy.utils import platform
 from database import init_db, LoadTasksDB, addTask, deleteTask, getNotifyWithID
 
@@ -50,12 +55,16 @@ class DeadlineApp(MDApp):
             ),
             MDDialogButtonContainer(
                 MDButton(MDButtonText(text="Cancel"), on_release=lambda x: self.editDialog.dismiss()),
-                MDButton(MDButtonText(text="Delete"), style="filled", theme_bg_color="Custom", md_bg_color="#D32F2F", on_release=lambda x: self.finalDelete(task_id))
+                MDButton(MDButtonText(text="Delete"), style="filled", theme_bg_color="Custom", md_bg_color="#D32F2F", on_release=lambda x: self.finalDelete(task_id)),
+                spacing="8dp"
             ),
-            spacing="8dp"
         )
         self.editDialog.open()
     def finalDelete(self, task_id):
+        if platform == "android":
+            reminders = getNotifyWithID(task_id)
+            for notify_id, notify_time in reminders:
+                cancel_alarm(notify_id)
         deleteTask(task_id)
         if self.editDialog:
             self.editDialog.dismiss()
@@ -65,60 +74,124 @@ class DeadlineApp(MDApp):
     def showDialog(self):
         self.taskTitle = MDTextField(MDTextFieldHintText(text="title"), id="taskInput", mode="outlined")
         self.taskDate = MDTextField(MDTextFieldHintText(text="deadline"), MDTextFieldTrailingIcon(icon="calendar"), mode="outlined", readonly=True)
-        self.taskDateNotify = MDTextField(MDTextFieldHintText(text="notification"), MDTextFieldTrailingIcon(icon="bell"), mode="outlined", readonly=True)
-
         self.taskDate.on_touch_down = lambda touch: self.handleTouch(self.taskDate, touch)
-        self.taskDateNotify.on_touch_down = lambda touch: self.handleTouch(self.taskDateNotify, touch)
+
+        self.notifications = []
+        self.notificationsList = MDList()
+        notificationScroll = MDScrollView(size_hint_y=None, height="100dp")
+        notificationsWrapper = MDBoxLayout(
+            orientation="vertical",
+            size_hint_y=None,
+            height="100dp",
+            md_bg_color=(0.15, 0.15, 0.15, 1),
+            radius=[16,]
+        )
+        notificationScroll.add_widget(self.notificationsList)
+        notificationsWrapper.add_widget(notificationScroll)
 
         self.dialog = MDDialog(
             MDDialogHeadlineText(text="Add Deadline"),
             MDDialogContentContainer(
                 self.taskTitle,
                 self.taskDate,
-                self.taskDateNotify,
+                MDLabel(text="Notifications"),
+                notificationsWrapper,
+                MDButton(MDButtonText(text="Set Notifications"), MDButtonIcon(icon="bell"), on_release=self.SetNotificationsDialog),
                 orientation="vertical",
                 spacing="12dp"
                 ),
             MDDialogButtonContainer(
                 MDButton(MDButtonText(text="Cancel"), on_release=lambda x: self.dialog.dismiss()),
-                MDButton(MDButtonText(text="Save"), on_release=self.saveTask)
+                Widget(),
+                MDButton(MDButtonText(text="Save"), style="filled", on_release=self.saveTask),
+                spacing="8dp"
                 ),
-            spacing="8dp"
         )
         self.dialog.open()
+    #refresh notification list
+    def refreshNotificationsUI(self):
+        self.notificationsList.clear_widgets()
+        for notify in self.notifications:
+            item = MDListItem(
+                MDListItemHeadlineText(text=notify)
+            )
 
+            self.notificationsList.add_widget(item)
+    #dialog Set Notifications
+    def SetNotificationsDialog(self, *args):
+        self.SNDialog = MDDialog(
+            MDDialogHeadlineText(text="Selet Reminder"),
+            MDDialogContentContainer(
+                MDButton(MDButtonText(text="5 minutes before"), on_release=lambda x: self.selectReminder(5)),
+                MDButton(MDButtonText(text="30 minutes before"), on_release=lambda x: self.selectReminder(30)),
+                MDButton(MDButtonText(text="1 hour before"), on_release=lambda x: self.selectReminder(60)),
+                MDButton(MDButtonText(text="Custom"), on_release=self.customReminder),
+                orientation="vertical",
+                spacing="8dp"
+            ),
+            spacing="8dp"
+        )
+        self.SNDialog.open()
+    #custom Reminder
+    def customReminder(self, *args):
+        self.SNDialog.dismiss()
+        self.openDatePicker(self.addCustomReminder)
+    def addCustomReminder(self, value):
+        if value not in self.notifications:
+            self.notifications.append(value)
+        self.refreshNotificationsUI()
+    #Select Reminder
+    def selectReminder(self, minutesBefore):
+        if not self.taskDate.text:
+            return
+        
+        deadline = datetime.strptime(
+            self.taskDate.text,
+            "%Y-%m-%d %H:%M"
+        )
+        notifyTime = deadline - timedelta(minutes=minutesBefore)
+        formatted = notifyTime.strftime("%Y-%m-%d %H:%M")
+        
+        if formatted not in self.notifications:
+            self.notifications.append(formatted)
+        
+        self.refreshNotificationsUI()
+        self.SNDialog.dismiss()
     #date picker
     def handleTouch(self, instance, touch):
         if instance.collide_point(*touch.pos):
-            self.openDatePicker(instance, True, instance)
+            self.openDatePicker(lambda value: self.setFieldText(instance, value))
             return True
         return False
-    def openDatePicker(self, instance, value, target):
-        if value:
-            dateDialog = MDModalDatePicker()
-            dateDialog.bind(on_ok=lambda x: self.onDateSave(x, target), on_cancel=lambda x: dateDialog.dismiss())
-            dateDialog.open()
-    def onDateSave(self, instance, target):
+    def setFieldText(self, field, value):
+        field.text = value
+        field.focus = False
+    def openDatePicker(self, callback):
+        dateDialog = MDModalDatePicker()
+        dateDialog.bind(on_ok=lambda x: self.onDateSave(x, callback), on_cancel=lambda x: dateDialog.dismiss())
+        dateDialog.open()
+    def onDateSave(self, instance, callback):
         dates = instance.get_date()
         if dates:
             tempDate = str(dates[0])
             instance.dismiss()
             timePicker = MDTimePickerDialVertical()
-            timePicker.bind(on_ok=lambda x: self.onTimeSave(x, target, tempDate), on_cancel=lambda x: timePicker.dismiss())
+            timePicker.bind(on_ok=lambda x: self.onTimeSave(x, callback, tempDate), on_cancel=lambda x: timePicker.dismiss())
             timePicker.open()
-    def onTimeSave(self, instance, target, tempDate):
+    def onTimeSave(self, instance, callback, tempDate):
         timeStr = instance.time.strftime("%H:%M")
-        target.text = f"{tempDate} {timeStr}"
+        finalDate = f"{tempDate} {timeStr}"
+        callback(finalDate)
         instance.dismiss()
-        target.focus = False
-
+    #final save task
     def saveTask(self, *args):
-        if self.taskDate.text == "" or self.taskDateNotify.text == "" or self.taskTitle.text == "": return
-        notify = []
-        notify.append(self.taskDateNotify.text)
-        task_id = addTask(self.taskTitle.text, self.taskDate.text, notify)
+        if self.taskDate.text == "" or self.notifications == [] or self.taskTitle.text == "": return
+
+        task_id = addTask(self.taskTitle.text, self.taskDate.text, self.notifications)
         if platform == "android":
-            schedule_alarm(task_id, self.taskTitle.text, self.taskDateNotify.text)
+            reminders = getNotifyWithID(task_id)
+            for notify_id, notifyTime in reminders:
+                schedule_alarm(notify_id, self.taskTitle.text, notifyTime)
 
         self.load_tasks()
         self.dialog.dismiss()

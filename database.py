@@ -8,7 +8,7 @@ def getConnection():
         from android.storage import app_storage_path #type: ignore
         dbPath = os.path.join(app_storage_path(), "database.db")
     else:
-        dbPath = "deadline_app/deadline 1.0.0/database.db"
+        dbPath = "database.db"
     return sqlite3.connect(dbPath)
 
 def init_db():
@@ -61,7 +61,7 @@ def getNotifyWithID(taskID):
     with getConnection() as conn:
         cursor = conn.cursor()
 
-        cursor.execute('''SELECT notify_at FROM reminders WHERE task_id = ?''', (taskID, ))
+        cursor.execute('''SELECT notify_id, notify_at FROM reminders WHERE task_id = ?''', (taskID, ))
         notifyTime = cursor.fetchall()
     conn.close()
     return notifyTime
@@ -94,6 +94,7 @@ def PrintAllData():
         print("Reminders: ", *cursor.fetchall(), sep="\n")
     conn.close()
 
+#delete task
 def deleteTask(taskID):
     with getConnection() as conn:
         cursor = conn.cursor()
@@ -110,6 +111,5 @@ if "__main__" == __name__:
     # for notify in data:
     #     markSent(notify[0])
 
-    # PrintAllData()
-    data = getNotifyWithID(1)
-    print(data)
+    print(getNotifyWithID(3))
+

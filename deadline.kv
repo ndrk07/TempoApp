@@ -1,0 +1,19 @@
+#:kivy 2.0.1
+MDScreen:
+    MDBoxLayout: 
+        orientation: "vertical"
+
+        MDTopAppBar:
+            type: "small"
+            MDTopAppBarTitle:
+                text: "Deadlines"
+        
+
+        MDScrollView:
+            MDList:
+                id: task_list
+    MDFabButton:
+        icon: "plus"
+        pos_hint: {"center_x": .85, "center_y": .1}
+        on_release: app.showDialog()
+

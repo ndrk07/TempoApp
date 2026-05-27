@@ -51,10 +51,11 @@ class DeadlineApp(MDApp):
         self.editDialog = MDDialog(
             MDDialogHeadlineText(text="Edit Deadline"),
             MDDialogContentContainer(
-                MDDialogSupportingText(text=f"scheduled for {NotifyTime[0][0]}")
+                MDDialogSupportingText(text=f"scheduled for {"\nscheduled for ".join(i for notify_id, i in NotifyTime)}")
             ),
             MDDialogButtonContainer(
                 MDButton(MDButtonText(text="Cancel"), on_release=lambda x: self.editDialog.dismiss()),
+                Widget(),
                 MDButton(MDButtonText(text="Delete"), style="filled", theme_bg_color="Custom", md_bg_color="#D32F2F", on_release=lambda x: self.finalDelete(task_id)),
                 spacing="8dp"
             ),
@@ -90,7 +91,7 @@ class DeadlineApp(MDApp):
         notificationsWrapper.add_widget(notificationScroll)
 
         self.dialog = MDDialog(
-            MDDialogHeadlineText(text="Add Deadline"),
+            MDDialogHeadlineText(text="New Deadline"),
             MDDialogContentContainer(
                 self.taskTitle,
                 self.taskDate,

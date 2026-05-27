@@ -110,6 +110,7 @@ if "__main__" == __name__:
 
     # for notify in data:
     #     markSent(notify[0])
-
-    print(getNotifyWithID(3))
+    data = getNotifyWithID(3)
+    for i, j in data:
+        print(j)
 

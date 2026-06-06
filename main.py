@@ -17,7 +17,7 @@ from kivymd.uix.pickers import MDModalDatePicker, MDTimePickerDialVertical
 from alarm import schedule_alarm, cancel_alarm
 from datetime import datetime, timedelta
 from kivy.utils import platform
-from database import init_db, LoadTasksDB, addTask, deleteTask, getNotifyWithID, deleteReminder
+from database import init_db, LoadTasksDB, addTask, deleteTask, getNotifyWithID, deleteReminder, getActiveReminders
 
 
 for font_data in fonts:
@@ -47,7 +47,7 @@ class DeadlineApp(MDApp):
     
     #dialog edit deadline
     def editDeadline(self, task_id):
-        NotifyTime = getNotifyWithID(task_id)
+        NotifyTime = getActiveReminders(task_id)
         self.currentTaskID = task_id
 
         self.editNotifications = NotifyTime
@@ -146,7 +146,7 @@ class DeadlineApp(MDApp):
         self.DRDialog.open()
     #refresh edit notification list
     def refreshEditNotificationUI(self):
-        self.editNotifications = getNotifyWithID(self.currentTaskID)
+        self.editNotifications = getActiveReminders(self.currentTaskID)
         self.buildNotificationList(self.editNotificationList, self.editNotifications, True)
     #refresh notification list
     def refreshNotificationsUI(self):

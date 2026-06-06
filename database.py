@@ -66,6 +66,15 @@ def getNotifyWithID(taskID):
     conn.close()
     return notifyTime
 
+def getActiveReminders(taskID):
+    with getConnection() as conn:
+        cursor = conn.cursor()
+        tNow = datetime.now().strftime("%Y-%m-%d %H:%M")
+        cursor.execute('''SELECT notify_id, notify_at FROM reminders WHERE task_id = ? AND notify_at > ?''', (taskID, tNow))
+        notifyTime = cursor.fetchall()
+    conn.close()
+    return notifyTime
+
 #mark
 def markSent(notifyID):
     with getConnection() as conn:
@@ -103,10 +112,10 @@ def deleteTask(taskID):
     conn.close()
 
 #delete Reminder
-def deleteReminder(notigy_id):
+def deleteReminder(notify_id):
     with getConnection() as conn:
         cursor = conn.cursor()
-        cursor.execute('''DELETE FROM reminders WHERE notify_id = ?''', (notigy_id, ))
+        cursor.execute('''DELETE FROM reminders WHERE notify_id = ?''', (notify_id, ))
     conn.close()
 
 if "__main__" == __name__:

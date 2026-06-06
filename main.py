@@ -6,7 +6,7 @@ from kivy.core.text import LabelBase
 from kivy.uix.widget import Widget
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.scrollview import MDScrollView
-from kivymd.uix.list import MDList
+from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.font_definitions import fonts
 from kivymd.uix.list import MDListItem, MDListItemHeadlineText, MDListItemSupportingText
@@ -17,7 +17,7 @@ from kivymd.uix.pickers import MDModalDatePicker, MDTimePickerDialVertical
 from alarm import schedule_alarm, cancel_alarm
 from datetime import datetime, timedelta
 from kivy.utils import platform
-from database import init_db, LoadTasksDB, addTask, deleteTask, getNotifyWithID
+from database import init_db, LoadTasksDB, addTask, deleteTask, getNotifyWithID, deleteReminder
 
 
 for font_data in fonts:
@@ -48,10 +48,29 @@ class DeadlineApp(MDApp):
     #dialog edit deadline
     def editDeadline(self, task_id):
         NotifyTime = getNotifyWithID(task_id)
+        self.currentTaskID = task_id
+
+        self.editNotifications = NotifyTime
+        self.editNotificationList = MDBoxLayout(orientation="vertical", adaptive_height=True, spacing="10dp", padding="6dp")
+        self.buildNotificationList(self.editNotificationList, self.editNotifications, True)
+        notificationScroll = MDScrollView()
+        notificationsWrapper = MDCard(
+            size_hint_y=None,
+            height="150dp",
+            radius=[15, 15, 15, 15],
+            style="filled",
+            theme_bg_color="Custom",
+            md_bg_color=(37/255, 38/255, 52/255, 1),
+        )
+        
+        notificationScroll.add_widget(self.editNotificationList)
+        notificationsWrapper.clear_widgets()
+        notificationsWrapper.add_widget(notificationScroll)
+        
         self.editDialog = MDDialog(
             MDDialogHeadlineText(text="Edit Deadline"),
             MDDialogContentContainer(
-                MDDialogSupportingText(text=f"scheduled for {"\nscheduled for ".join(i for notify_id, i in NotifyTime)}")
+                notificationsWrapper
             ),
             MDDialogButtonContainer(
                 MDButton(MDButtonText(text="Cancel"), on_release=lambda x: self.editDialog.dismiss()),
@@ -60,6 +79,7 @@ class DeadlineApp(MDApp):
                 spacing="8dp"
             ),
         )
+        
         self.editDialog.open()
     def finalDelete(self, task_id):
         if platform == "android":
@@ -78,16 +98,19 @@ class DeadlineApp(MDApp):
         self.taskDate.on_touch_down = lambda touch: self.handleTouch(self.taskDate, touch)
 
         self.notifications = []
-        self.notificationsList = MDList()
-        notificationScroll = MDScrollView(size_hint_y=None, height="100dp")
-        notificationsWrapper = MDBoxLayout(
-            orientation="vertical",
+        self.notificationsList = MDBoxLayout(orientation="vertical", adaptive_height=True, spacing="10dp", padding="6dp")
+        notificationScroll = MDScrollView()
+        notificationsWrapper = MDCard(
             size_hint_y=None,
-            height="100dp",
-            md_bg_color=(0.15, 0.15, 0.15, 1),
-            radius=[16,]
+            height="150dp",
+            radius=[15, 15, 15, 15],
+            style="filled",
+            theme_bg_color="Custom",
+            md_bg_color=(37/255, 38/255, 52/255, 1),
+            # padding="10dp"
         )
         notificationScroll.add_widget(self.notificationsList)
+        notificationsWrapper.clear_widgets()
         notificationsWrapper.add_widget(notificationScroll)
 
         self.dialog = MDDialog(
@@ -109,15 +132,87 @@ class DeadlineApp(MDApp):
                 ),
         )
         self.dialog.open()
+    #agree delete reminder
+    def deleteReminderDialog(self, notify_id):
+        self.DRDialog = MDDialog(
+            MDDialogHeadlineText(text="Delete Reminder?"),
+            MDDialogButtonContainer(
+                MDButton(MDButtonText(text="Cancel"), on_release=lambda x: self.DRDialog.dismiss()),
+                Widget(),
+                MDButton(MDButtonText(text="Delete"), style="filled", theme_bg_color="Custom", md_bg_color="#D32F2F", on_release=lambda x: self.removeReminder(notify_id)),
+                spacing="8dp"
+            )
+        )
+        self.DRDialog.open()
+    #refresh edit notification list
+    def refreshEditNotificationUI(self):
+        self.editNotifications = getNotifyWithID(self.currentTaskID)
+        self.buildNotificationList(self.editNotificationList, self.editNotifications, True)
     #refresh notification list
     def refreshNotificationsUI(self):
-        self.notificationsList.clear_widgets()
-        for notify in self.notifications:
-            item = MDListItem(
-                MDListItemHeadlineText(text=notify)
+        self.buildNotificationList(self.notificationsList, self.notifications)
+    #build NotificationList
+    def buildNotificationList(self, container, notifications, edit=False):
+        container.clear_widgets()
+        for notify in notifications:
+            if edit:
+                notify_id, notify_text = notify
+            else:
+                notify_text = notify
+            item = MDCard(
+                orientation="horizontal",
+                size_hint_y=None,
+                height="50dp",
+                radius=[15, 15, 15, 15],
+                padding="16dp",
+                spacing="12dp",
+                style="filled",
+                theme_bg_color="Custom",
+                md_bg_color=(67/255, 67/255, 88/255, 1)
             )
+            label = MDLabel(
+                text=notify_text,
+                theme_text_color="Custom",
+                text_color=(182/255, 158/255, 239/255, 1),
+                halign="left"
+            )
+            if edit:
+                deleteBtn = MDIconButton(
+                    icon="trash-can-outline",
+                    theme_icon_color="Custom",
+                    icon_color=(182/255, 158/255, 239/255, 1),
+                    pos_hint={"center_y": 0.5},
+                    on_release=lambda x, nid=notify_id: self.deleteReminderDialog(nid)
+                )
+            else:
+                deleteBtn = MDIconButton(
+                    icon="trash-can-outline",
+                    theme_icon_color="Custom",
+                    icon_color=(182/255, 158/255, 239/255, 1),
+                    pos_hint={"center_y": 0.5},
+                    on_release=lambda x, n=notify_text: self.removeNotification(n)
+                )
+            content = MDBoxLayout(
+                orientation="horizontal"
+            )
+            content.add_widget(label)
+            content.add_widget(deleteBtn)
+            
+            item.add_widget(content)
+            container.add_widget(item)
 
-            self.notificationsList.add_widget(item)
+    #remove Notification
+    def removeNotification(self, notif):
+        if notif in self.notifications:
+            self.notifications.remove(notif)
+            self.refreshNotificationsUI()
+    #remove Reminder
+    def removeReminder(self, notify_id):
+        if platform == "android":
+            cancel_alarm(notify_id)
+        deleteReminder(notify_id)
+        self.refreshEditNotificationUI()
+        self.DRDialog.dismiss()
     #dialog Set Notifications
     def SetNotificationsDialog(self, *args):
         self.SNDialog = MDDialog(

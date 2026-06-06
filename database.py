@@ -102,6 +102,13 @@ def deleteTask(taskID):
         cursor.execute("DELETE FROM reminders WHERE task_id = (?)", (taskID, ))
     conn.close()
 
+#delete Reminder
+def deleteReminder(notigy_id):
+    with getConnection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''DELETE FROM reminders WHERE notify_id = ?''', (notigy_id, ))
+    conn.close()
+
 if "__main__" == __name__:
     # data = getTaskNotify()
     # print(data)

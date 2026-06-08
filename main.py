@@ -3,6 +3,7 @@ from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivy.core.text import LabelBase
 from kivy.uix.widget import Widget
+from kivymd.uix.card import MDCard
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.scrollview import MDScrollView
 from kivy.animation import Animation
@@ -56,7 +57,7 @@ class DeadlineApp(MDApp):
         self.editNotificationList = MDBoxLayout(orientation="vertical", adaptive_height=True, spacing="10dp", padding="6dp")
         self.buildNotificationList(self.editNotificationList, self.editNotifications, True)
         notificationScroll = MDScrollView()
-        notificationsWrapper = MDBoxLayout(
+        notificationsWrapper = MDCard(
             size_hint_y=None,
             height="150dp",
             radius=[20, 20, 20, 20],
@@ -94,7 +95,7 @@ class DeadlineApp(MDApp):
         self.notifications = []
         self.notificationsList = MDBoxLayout(orientation="vertical", adaptive_height=True, spacing="10dp", padding="6dp")
         notificationScroll = MDScrollView()
-        notificationsWrapper = MDBoxLayout(
+        notificationsWrapper = MDCard(
             size_hint_y=None,
             height="150dp",
             radius=[20, 20, 20, 20],
@@ -182,10 +183,10 @@ class DeadlineApp(MDApp):
         self.SNDialog = MDDialog(
             MDDialogHeadlineText(text="Selet Reminder"),
             MDDialogContentContainer(
-                MDButton(MDButtonText(text=" 5 minutes before "), pos_hint={"center_x": .5, "center_y": .5}, style="outlined", on_release=lambda x: self.selectReminder(5)),
-                MDButton(MDButtonText(text="30 minutes before"), pos_hint={"center_x": .5, "center_y": .5}, style="outlined", on_release=lambda x: self.selectReminder(30)),
-                MDButton(MDButtonText(text="     1 hour before     "), pos_hint={"center_x": .5, "center_y": .5}, style="outlined", on_release=lambda x: self.selectReminder(60)),
-                MDButton(MDButtonText(text="           Custom           "), pos_hint={"center_x": .5, "center_y": .5}, style="outlined", on_release=self.customReminder),
+                MDButton(MDButtonText(text=" 5 minutes before "), pos_hint={"center_x": .5, "center_y": .5}, style="filled", on_release=lambda x: self.selectReminder(5)),
+                MDButton(MDButtonText(text="30 minutes before"), pos_hint={"center_x": .5, "center_y": .5}, style="filled", on_release=lambda x: self.selectReminder(30)),
+                MDButton(MDButtonText(text="     1 hour before     "), pos_hint={"center_x": .5, "center_y": .5}, style="filled", on_release=lambda x: self.selectReminder(60)),
+                MDButton(MDButtonText(text="           Custom           "), pos_hint={"center_x": .5, "center_y": .5}, style="filled", on_release=self.customReminder),
                 orientation="vertical",
                 spacing="8dp",
             ),

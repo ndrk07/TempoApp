@@ -8,6 +8,7 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.scrollview import MDScrollView
 from kivy.animation import Animation
 from kivymd.uix.label import MDLabel
+from kivy.metrics import dp
 from kivymd.font_definitions import fonts
 from kivymd.uix.list import MDListItem, MDListItemHeadlineText, MDListItemSupportingText
 from kivymd.uix.dialog import (MDDialog, MDDialogHeadlineText, MDDialogButtonContainer, MDDialogContentContainer)
@@ -59,8 +60,9 @@ class DeadlineApp(MDApp):
         notificationScroll = MDScrollView()
         notificationsWrapper = MDCard(
             size_hint_y=None,
+            style="filled",
             height="150dp",
-            radius=[20, 20, 20, 20],
+            radius=[dp(20)],
             theme_bg_color="Custom",
             md_bg_color=(37/255, 38/255, 52/255, 1),
             padding="5dp"
@@ -97,11 +99,12 @@ class DeadlineApp(MDApp):
         notificationScroll = MDScrollView()
         notificationsWrapper = MDCard(
             size_hint_y=None,
+            style="filled",
             height="150dp",
-            radius=[20, 20, 20, 20],
+            radius=[dp(20)],
             theme_bg_color="Custom",
             md_bg_color=(37/255, 38/255, 52/255, 1),
-            padding="5dp",
+            padding="5dp"
         )
         notificationScroll.add_widget(self.notificationsList)
         notificationsWrapper.clear_widgets()

@@ -29,7 +29,6 @@ def init_db():
                             FOREIGN KEY (task_id) REFERENCES tasks(task_id))
                        ''')
     conn.close()
-
 # add task
 def addTask(title, deadline, notificationTimes):
     with getConnection() as conn:
@@ -42,7 +41,14 @@ def addTask(title, deadline, notificationTimes):
             cursor.execute("INSERT INTO reminders (task_id, notify_at) VALUES (?, ?)", (lastTaskID, notification, ))
     conn.close()
     return lastTaskID
-
+# add reminder
+def addReminder(task_id, notify_at):
+    with getConnection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''INSERT INTO reminders (task_id, notify_at) VALUES (?, ?)''', (task_id, notify_at))
+        notify_id = cursor.lastrowid
+    conn.close()
+    return notify_id
 #get task where notify = 0
 def getTaskNotify():
     with getConnection() as conn:
@@ -55,7 +61,6 @@ def getTaskNotify():
         data = cursor.fetchall()
     conn.close()
     return data
-
 # get notify
 def getNotifyWithID(taskID):
     with getConnection() as conn:
@@ -65,7 +70,7 @@ def getNotifyWithID(taskID):
         notifyTime = cursor.fetchall()
     conn.close()
     return notifyTime
-
+#get active reminders
 def getActiveReminders(taskID):
     with getConnection() as conn:
         cursor = conn.cursor()
@@ -74,7 +79,6 @@ def getActiveReminders(taskID):
         notifyTime = cursor.fetchall()
     conn.close()
     return notifyTime
-
 #mark
 def markSent(notifyID):
     with getConnection() as conn:
@@ -82,7 +86,6 @@ def markSent(notifyID):
 
         cursor.execute('''UPDATE reminders SET is_sent = 1 WHERE notify_id = (?)''', (notifyID, ))
     conn.close()
-
 #load data
 def LoadTasksDB():
     with getConnection() as conn:
@@ -91,7 +94,6 @@ def LoadTasksDB():
         Tasks = cursor.fetchall()
     conn.close()
     return Tasks
-
 #print Data
 def PrintAllData():
     with getConnection() as conn:
@@ -102,7 +104,6 @@ def PrintAllData():
         cursor.execute('''SELECT * FROM reminders''')
         print("Reminders: ", *cursor.fetchall(), sep="\n")
     conn.close()
-
 #delete task
 def deleteTask(taskID):
     with getConnection() as conn:
@@ -110,7 +111,6 @@ def deleteTask(taskID):
         cursor.execute("DELETE FROM tasks WHERE task_id = (?)", (taskID, ))
         cursor.execute("DELETE FROM reminders WHERE task_id = (?)", (taskID, ))
     conn.close()
-
 #delete Reminder
 def deleteReminder(notify_id):
     with getConnection() as conn:

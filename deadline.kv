@@ -17,3 +17,30 @@ MDScreen:
         pos_hint: {"center_x": .85, "center_y": .1}
         on_release: app.showDialog()
 
+<NotificationItem>:
+    orientation: "horizontal"
+    size_hint_y: None
+    height: "50dp"
+    padding: "16dp"
+    spacing: "12dp"
+
+    canvas.before:
+        Color:
+            rgba: 67/255, 67/255, 88/255, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [25]
+    
+    MDLabel:
+        id: notify_label
+        theme_text_color: "Custom"
+        text_color: 182/255, 158/255, 239/255, 1
+        halign: "left"
+    
+    MDIconButton:
+        id: delete_btn
+        icon: "trash-can-outline"
+        theme_icon_color: "Custom"
+        icon_color: 182/255, 158/255, 239/255, 1
+        pos_hint: {"center_y": 0.5}

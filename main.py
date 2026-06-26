@@ -75,7 +75,7 @@ class DeadlineApp(MDApp):
             height="150dp",
             radius=[dp(20)],
             theme_bg_color="Custom",
-            md_bg_color=(37/255, 38/255, 52/255, 1),
+            md_bg_color=(19/255, 22/255, 29/255, 1),
             padding="5dp"
         )
         
@@ -114,14 +114,14 @@ class DeadlineApp(MDApp):
             height="150dp",
             radius=[dp(20)],
             theme_bg_color="Custom",
-            md_bg_color=(37/255, 38/255, 52/255, 1),
+            md_bg_color=(19/255, 22/255, 29/255, 1),
             padding="5dp"
         )
         notificationScroll.add_widget(self.notificationsList)
         notificationsWrapper.clear_widgets()
         notificationsWrapper.add_widget(notificationScroll)
 
-        self.dialog = GlassDialog(
+        self.dialog = MDDialog(
             MDDialogHeadlineText(text="New Deadline", theme_text_color="Custom", text_color=fontColor),
             MDDialogContentContainer(
                 self.taskTitle,
@@ -139,7 +139,7 @@ class DeadlineApp(MDApp):
                 spacing="8dp"
                 ),
             theme_bg_color="Custom", theme_line_color="Custom",
-            md_bg_color=(27/255, 29/255, 32/255, 0.8), line_color=(1, 1, 1, 0.6)
+            md_bg_color=(33/255, 36/255, 41/255, 1), line_color=(1, 1, 1, 0.6)
         )
         self.dialog.open()
     #agree delete reminder

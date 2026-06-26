@@ -32,6 +32,9 @@ class GlassCard(MDCard, GlassEffect):
     edit = ObjectProperty(None, allownone=True)
 class GlassMDIconButton(MDIconButton, GlassEffect):
     pass
+class GlassDialog(MDDialog, GlassEffect):
+    pass
+fontColor = "#d5dce3"
 
 for font_data in fonts:
     LabelBase.register(**font_data)
@@ -98,8 +101,8 @@ class DeadlineApp(MDApp):
         self.editDialog.open()
     #dialog add task
     def showDialog(self):
-        self.taskTitle = MDTextField(MDTextFieldHintText(text="title"), id="taskInput", mode="outlined")
-        self.taskDate = MDTextField(MDTextFieldHintText(text="deadline"), MDTextFieldTrailingIcon(icon="calendar"), mode="outlined", readonly=True)
+        self.taskTitle = MDTextField(MDTextFieldHintText(text="title", theme_text_color="Custom", text_color=(1, 1, 1, 1)), id="taskInput", mode="outlined", theme_text_color="Custom")
+        self.taskDate = MDTextField(MDTextFieldHintText(text="deadline", theme_text_color="Custom", text_color=fontColor), MDTextFieldTrailingIcon(icon="calendar"), mode="outlined", readonly=True)
         self.taskDate.on_touch_down = lambda touch: self.handleTouch(self.taskDate, touch)
 
         self.notifications = []
@@ -118,12 +121,12 @@ class DeadlineApp(MDApp):
         notificationsWrapper.clear_widgets()
         notificationsWrapper.add_widget(notificationScroll)
 
-        self.dialog = MDDialog(
-            MDDialogHeadlineText(text="New Deadline"),
+        self.dialog = GlassDialog(
+            MDDialogHeadlineText(text="New Deadline", theme_text_color="Custom", text_color=fontColor),
             MDDialogContentContainer(
                 self.taskTitle,
                 self.taskDate,
-                MDLabel(text="Notifications"),
+                MDLabel(text="Notifications", theme_text_color="Custom", text_color=fontColor),
                 notificationsWrapper,
                 MDButton(MDButtonText(text="Set Notifications"), MDButtonIcon(icon="bell"), on_release=self.SetNotificationsDialog),
                 orientation="vertical",
@@ -135,6 +138,8 @@ class DeadlineApp(MDApp):
                 MDButton(MDButtonText(text="Save"), style="filled", on_release=self.saveTask),
                 spacing="8dp"
                 ),
+            theme_bg_color="Custom", theme_line_color="Custom",
+            md_bg_color=(27/255, 29/255, 32/255, 0.8), line_color=(1, 1, 1, 0.6)
         )
         self.dialog.open()
     #agree delete reminder

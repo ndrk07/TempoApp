@@ -1,17 +1,41 @@
 #:kivy 2.0.1
 MDScreen:
+    canvas.before:
+        Color:
+            rgba: 27/255, 30/255, 35/255,  1
+        BoxShadow:
+            pos: self.x, self.y
+            size: self.width, self.height 
+        Color:
+            rgba: 65/255, 70/255, 78/255, 0.6
+        BoxShadow:
+            pos: self.x, self.y + self.height * 0.6
+            size: self.width * 0.3, self.height * 0.4
+            offset: -100, 100
+            blur_radius: 1100
+        Color:
+            rgba: 101/255, 108/255, 118/255,  0.6
+        BoxShadow:
+            pos: self.x, self.y + self.height * 0.8
+            size: self.width * 0.1, self.height * 0.2
+            offset: -200, 200
+            blur_radius: 1100
+
     MDBoxLayout: 
         orientation: "vertical"
-
         MDTopAppBar:
             type: "small"
+            theme_bg_color: "Custom"
+            md_bg_color: 28/255, 28/255, 28/255, 1
             MDTopAppBarTitle:
                 text: "Deadlines"
+                text_color: "#d5dce3"
         
-
         MDScrollView:
             MDList:
                 id: task_list
+                spacing: "8dp"
+                padding: "10dp"
     MDFabButton:
         icon: "plus"
         pos_hint: {"center_x": .85, "center_y": .1}
@@ -44,3 +68,79 @@ MDScreen:
         theme_icon_color: "Custom"
         icon_color: 182/255, 158/255, 239/255, 1
         pos_hint: {"center_y": 0.5}
+
+<GlassCard>:
+    orientation: "horizontal"
+    size_hint_y: None
+    padding: "20dp"
+    spacing: "15dp"
+    height: "80dp"
+    radius: [dp(40)]
+    theme_bg_color: "Custom"
+    theme_line_color: "Custom"
+    md_bg_color: 28/255, 28/255, 28/255, 0.15
+    line_color: 1, 1, 1, 0.4
+
+    MDListItemLeadingIcon:
+        icon: "calendar-blank-outline"
+        theme_icon_color: "Custom"
+        icon_color: "#d5dce3"
+        pos_hint: {"center_y": .5}
+    MDBoxLayout:
+        orientation: "vertical"
+        spacing: "15dp"
+        MDLabel:
+            text: root.title_text
+            bold: True
+            theme_text_color: "Custom"
+            text_color: "#d5dce3"
+            theme_font_size: "Custom"
+            font_size: "20dp"
+        MDLabel:
+            text: root.deadline_text
+            theme_text_color: "Custom"
+            text_color: "#d5dce3"        
+            theme_font_size: "Custom"
+            font_size: "14dp"
+    GlassMDIconButton:
+        icon: "pencil"
+        theme_icon_color: "Custom"
+        icon_color: "#d5dce3"
+        pos_hint: {"center_y": .5}
+        on_release: if root.edit: root.edit()
+        canvas.after:
+            Color: 
+                rgba: 1, 1, 1, 0.4
+            Line:
+                width: 1
+                circle: (self.center_x, self.center_y, min(self.width, self.height) / 2, 0, 360)
+
+<GlassEffect>:
+    canvas.before:
+        Color:
+            rgba: 0, 0, 0, 0.3
+        BoxShadow:
+            inset: False
+            pos: self.pos
+            size: self.size
+            offset: 0, -10
+            blur_radius: 17
+            spread_radius: 0, 0
+            border_radius: self.radius
+        Color:
+            rgba: 0, 0, 0, 0.05 
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(40)]
+    canvas:
+        Color:
+            rgba: 0, 0, 0, 0.8
+        BoxShadow:
+            inset: True
+            pos: self.pos
+            size: self.size
+            offset: 0, -105
+            blur_radius: 15
+            spread_radius: 0, -100
+            border_radius: self.radius

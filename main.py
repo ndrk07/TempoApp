@@ -9,8 +9,10 @@ from kivymd.uix.scrollview import MDScrollView
 from kivy.animation import Animation
 from kivymd.uix.label import MDLabel
 from kivy.metrics import dp
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.properties import StringProperty, ObjectProperty
 from kivymd.font_definitions import fonts
-from kivymd.uix.list import MDListItem, MDListItemHeadlineText, MDListItemSupportingText
+from kivymd.uix.list import MDListItemLeadingIcon
 from kivymd.uix.dialog import (MDDialog, MDDialogHeadlineText, MDDialogButtonContainer, MDDialogContentContainer)
 from kivymd.uix.button import MDButton, MDButtonText, MDIconButton, MDButtonIcon
 from kivymd.uix.textfield import MDTextField, MDTextFieldHintText, MDTextFieldTrailingIcon
@@ -21,6 +23,14 @@ from kivy.utils import platform
 from database import init_db, LoadTasksDB, addTask, deleteTask, getNotifyWithID, deleteReminder, getActiveReminders, addReminder
 
 class NotificationItem(MDBoxLayout):
+    pass
+class GlassEffect:
+    pass
+class GlassCard(MDCard, GlassEffect):
+    title_text = StringProperty("")
+    deadline_text = StringProperty("")
+    edit = ObjectProperty(None, allownone=True)
+class GlassMDIconButton(MDIconButton, GlassEffect):
     pass
 
 for font_data in fonts:
@@ -43,9 +53,7 @@ class DeadlineApp(MDApp):
         tasks = LoadTasksDB()
 
         for task_id, title, deadline in tasks:
-            editButton = MDIconButton(icon="calendar-edit", theme_icon_color="Custom", icon_color="#49454f",pos_hint={"center_y": .5})
-            editButton.bind(on_release=lambda x, tid=task_id, tt=title: self.editDeadline(tid, tt))
-            item = MDListItem(MDListItemHeadlineText(text=title), MDListItemSupportingText(text=deadline), editButton)
+            item = GlassCard(title_text=title, deadline_text=deadline, edit=lambda tid=task_id, tt=title: self.editDeadline(tid, tt))
             listView.add_widget(item)
     
     #dialog edit deadline
